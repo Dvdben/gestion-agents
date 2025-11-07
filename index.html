@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Agents</title>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>📋 Gestion des Agents</h1>
+        
+        <!-- Formulaire d'ajout -->
+        <form id="form-agent" class="form">
+            <h2>Ajouter un agent</h2>
+            <input type="text" id="prenom" placeholder="Prénom" required>
+            <input type="text" id="nom" placeholder="Nom" required>
+            <input type="text" id="poste" placeholder="Poste" required>
+            <button type="submit">➕ Ajouter</button>
+        </form>
+
+        <!-- Liste des agents -->
+        <div class="liste-agents">
+            <h2>Liste des Agents</h2>
+            <div id="liste-agents-container">
+                <!-- Les agents apparaîtront ici -->
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
