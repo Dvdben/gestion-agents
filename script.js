@@ -1,9 +1,12 @@
 // Configuration Supabase - REMPLACEZ AVEC VOS VRAIES CLÉS !
 // Configuration Supabase - Utilise les variables d'environnement de Netlify
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
+  const supabaseUrl = '%%SUPABASE_URL%%';
+  const supabaseKey = '%%SUPABASE_ANON_KEY%%';
 
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+  // Now initialize Supabase with the variables
+  const { createClient } = supabase;
+  const supabaseClient = createClient(supabaseUrl, supabaseKey);
+
 
 // Éléments du DOM
 const form = document.getElementById('form-agent');
