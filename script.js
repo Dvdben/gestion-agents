@@ -1,12 +1,9 @@
-// Configuration Supabase - REMPLACEZ AVEC VOS VRAIES CLÉS !
-// Configuration Supabase - Utilise les variables d'environnement de Netlify
-  const supabaseUrl = '%%SUPABASE_URL%%';
-  const supabaseKey = '%%SUPABASE_ANON_KEY%%';
+// Configuration Supabase
+const supabaseUrl = 'https://zrqjvzfwihwmbmctwjgw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpycWp2emZ3aWh3bWJtY3R3amd3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzA5ODU2MTMsIm极客4cCI6MjA0NjU2MTYxM30.2kJaP5q8-3Vv极客zH9iYwQJtVlJ7JZV8V9Q1QZ0ZJZJZJZ';
 
-  // Now initialize Supabase with the variables
-  const { createClient } = supabase;
-  const supabaseClient = createClient(supabaseUrl, supabaseKey);
-
+// Initialisation de Supabase
+const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
 // Éléments du DOM
 const form = document.getElementById('form-agent');
@@ -25,6 +22,8 @@ form.addEventListener('submit', async (e) => {
         poste: document.getElementById('poste').value
     };
 
+    console.log('Tentative d\'ajout:', nouvelAgent);
+
     // Insérer dans Supabase
     const { data, error } = await supabase
         .from('agents')
@@ -32,10 +31,10 @@ form.addEventListener('submit', async (e) => {
         .select();
 
     if (error) {
-        console.error('Erreur:', error);
-        alert('Erreur lors de l\'ajout');
+        console.error('Erreur détaillée:', error);
+        alert('Erreur lors de l\'ajout: ' + error.message);
     } else {
-        console.log('Agent ajouté:', data);
+        console.log('Agent ajouté avec succès:', data);
         form.reset();
         chargerAgents();
     }
@@ -43,6 +42,7 @@ form.addEventListener('submit', async (e) => {
 
 // Fonction pour charger les agents
 async function chargerAgents() {
+    console.log('Chargement des agents...');
     const { data: agents, error } = await supabase
         .from('agents')
         .select('*')
@@ -53,11 +53,12 @@ async function chargerAgents() {
         return;
     }
 
+    console.log('Agents chargés:', agents);
     afficherAgents(agents);
 }
 
 // Fonction pour afficher les agents
-function afficherAgents(agents) {
+function afficher极客Agents(agents) {
     listeContainer.innerHTML = '';
     
     if (agents.length === 0) {
@@ -92,9 +93,9 @@ window.supprimerAgent = async (id) => {
 
     if (error) {
         console.error('Erreur de suppression:', error);
-        alert('Erreur lors de la suppression');
+        alert('Erreur lors de la suppression: ' + error.message);
     } else {
-        console.log('Agent supprimé');
+        console.log('Agent supprimé avec succès');
         chargerAgents();
     }
 };

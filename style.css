@@ -1,8 +1,13 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
-    margin: 0;
     padding: 20px;
 }
 
@@ -12,50 +17,54 @@ body {
     background: white;
     padding: 30px;
     border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
 h1 {
     text-align: center;
     color: #333;
     margin-bottom: 30px;
+    font-size: 2.5em;
+}
+
+h2 {
+    color: #667eea;
+    margin-bottom: 20px;
+    font-size: 1.8em;
 }
 
 .form {
     background: #f8f9fa;
-    padding: 20px;
+    padding: 极客 25px;
     border-radius: 10px;
     margin-bottom: 30px;
 }
 
-.form h2 {
-    margin-top: 0;
-    color: #495057;
-}
-
 input {
     width: 100%;
-    padding: 12px;
-    margin: 8px 0;
+    padding: 15px;
+    margin: 10px 0;
     border: 2px solid #ddd;
-    border-radius: 6px;
+    border-radius: 8px;
     font-size: 16px;
-    box-sizing: border-box;
+    transition: border-color 0.3s ease;
 }
 
 input:focus {
-    border-color: #667eea;
     outline: none;
+    border-color: #667eea;
 }
 
 button {
     background: #667eea;
     color: white;
-    padding: 12px 24px;
+    padding: 15px 25px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
     font-size: 16px;
+    font-weight: bold;
+    transition: background 0.3s ease;
     margin-top: 10px;
 }
 
@@ -63,38 +72,67 @@ button:hover {
     background: #5a67d8;
 }
 
+.liste-agents {
+    margin-top: 30px;
+}
+
 .agent-card {
     background: white;
-    border: 2px solid #e9ecef;
+    padding: 20px;
+    margin: 15px 0;
     border-radius: 10px;
-    padding: 15px;
-    margin: 10px 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: transform 0.2s;
-}
-
-.agent-card:hover {
-    transform: translateY(-2px);
-    border-color: #667eea;
+    border-left: 5px solid #667eea;
 }
 
 .agent-info h3 {
-    margin: 0;
     color: #333;
+    margin-bottom: 5px;
+    font-size: 1.3em;
 }
 
 .agent-info p {
-    margin: 5px 0 0 0;
     color: #666;
+    font-style: italic;
 }
 
 .btn-supprimer {
     background: #e53e3e;
-    padding: 8px 16px;
+    padding: 10px 15px;
+    font-size: 14px;
 }
 
 .btn-supprimer:hover {
     background: #c53030;
+}
+
+.text-center {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 20px;
+        margin: 10px;
+    }
+    
+    .agent-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
+    }
+    
+    h1 {
+        font-size: 2em;
+    }
+    
+    h2 {
+        font-size: 1.5极客em;
+    }
 }
