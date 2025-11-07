@@ -1,6 +1,6 @@
 // Configuration Supabase - REMPLACEZ AVEC VOS VRAIES CLÉS !
-const supabaseUrl = 'https://votredomaine.supabase.co';
-const supabaseKey = 'votre.cle.api.anon.publique';
+const supabaseUrl = 'https://gbnotarigfteynwchmnh.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdibm90YXJpZ2Z0ZXlud2NobW5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MTg0OTgsImV4cCI6MjA3ODA5NDQ5OH0.kOyYb-wql3FTLe5iD5l-oup3FDk1Jb1xCgGpK3fQFCA';
 const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 // Éléments du DOM
