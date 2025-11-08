@@ -2,106 +2,152 @@
 const supabaseUrl = 'https://gbnotarigfteynwchmnh.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdibm90YXJpZ2Z0ZXlud2NobW5oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MTg0OTgsImV4cCI6MjA3ODA5NDQ5OH0.kOyYb-wql3FTLe5iD5l-oup3FDk1Jb1xCgGpK3fQFCA';
 
-const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+// Vérification que Supabase est chargé
+function verifierSupabase() {
+    if (typeof supabase === 'undefined') {
+        console.error('❌ Supabase non chargé');
+        return false;
+    }
+    return true;
+}
 
-// Test de connexion immédiat
+// Initialisation sécurisée
+let supabaseClient;
+function initialiserSupabase() {
+    if (!verifierSupabase()) {
+        throw new Error('Bibliothèque Supabase non disponible');
+    }
+    
+    supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+    console.log('✅ Supabase initialisé');
+    return supabaseClient;
+}
+
+// Test de connexion
 async function testerConnexion() {
     console.log('🔍 Test de connexion Supabase...');
     
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('agents')
             .select('*')
             .limit(1);
         
         if (error) {
             console.error('❌ ERREUR RLS/Connexion:', error);
-            
-            // Afficher l'erreur à l'écran
-            const errorDiv = document.createElement('div');
-            errorDiv.style.cssText = `
-                background: #ff4444; 
-                color: white; 
-                padding: 15px; 
-                margin: 10px 0; 
-                border-radius: 5px;
-                font-family: Arial, sans-serif;
-            `;
-            errorDiv.innerHTML = `
-                <h3>❌ Erreur Supabase</h3>
-                <p><strong>Message:</strong> ${error.message}</p>
-                <p><strong>Code:</strong> ${error.code || 'N/A'}</p>
-                <p><strong>Détails:</strong> ${error.details || 'N/A'}</p>
-                <p><strong>Solution:</strong> Vérifiez les politiques RLS dans Supabase</p>
-            `;
-            document.body.prepend(errorDiv);
-            
+            afficherErreur(error);
+            return false;
         } else {
             console.log('✅ Connexion réussie! RLS configuré correctement');
+            return true;
         }
     } catch (err) {
         console.error('❌ Exception:', err);
+        return false;
     }
 }
 
+function afficherErreur(error) {
+    const errorDiv = document.createElement('div');
+    errorDiv.style.cssText = `
+        background: #ff4444; 
+        color: white; 
+        padding: 15px; 
+        margin: 10px 0; 
+        border-radius: 5px;
+        font-family: Arial, sans-serif;
+    `;
+    errorDiv.innerHTML = `
+        <h3>❌ Erreur Supabase</h3>
+        <p><strong>Message:</strong> ${error.message}</p>
+        <p><strong>Code:</strong> ${error.code || 'N/A'}</p>
+        <p><strong>Détails:</strong> ${error.details || 'N/A'}</p>
+        <p><strong>Solution:</strong> Vérifiez les politiques RLS dans Supabase</p>
+    `;
+    document.body.prepend(errorDiv);
+}
+
 // Éléments DOM
-const form = document.getElementById('form-agent');
-const listeContainer = document.getElementById('liste-agents-container');
+let form, listeContainer;
 
-// Initialisation
-document.addEventListener('DOMContentLoaded', () => {
-    testerConnexion();
-    chargerAgents();
-});
-
-// Soumission formulaire
-form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+function initialiserElementsDOM() {
+    form = document.getElementById('form-agent');
+    listeContainer = document.getElementById('liste-agents-container');
     
-    const prenom = document.getElementById('prenom').value.trim();
-    const nom = document.getElementById('nom').value.trim();
-    const poste = document.getElementById('poste').value.trim();
-    
-    if (!prenom || !nom || !poste) {
-        alert('Veuillez remplir tous les champs');
-        return;
+    if (!form || !listeContainer) {
+        console.error('❌ Éléments DOM non trouvés');
+        return false;
     }
-    
-    const nouvelAgent = { prenom, nom, poste };
-    console.log('➕ Tentative ajout:', nouvelAgent);
+    return true;
+}
 
+// Initialisation principale
+async function initialiserApplication() {
     try {
-        const { data, error } = await supabase
-            .from('agents')
-            .insert([nouvelAgent])
-            .select();
-
-        if (error) {
-            console.error('❌ Erreur insertion détaillée:', error);
-            
-            if (error.code === '42501') {
-                alert('Erreur de permissions RLS. Vérifiez les politiques dans Supabase.');
-            } else {
-                alert('Erreur: ' + error.message);
-            }
-        } else {
-            console.log('✅ Agent ajouté:', data);
-            form.reset();
-            chargerAgents();
-            alert('✅ Agent ajouté avec succès!');
+        if (!initialiserElementsDOM()) return;
+        
+        initialiserSupabase();
+        const connexionReussie = await testerConnexion();
+        
+        if (connexionReussie) {
+            await chargerAgents();
+            initialiserFormulaire();
         }
-    } catch (err) {
-        console.error('❌ Exception:', err);
-        alert('Erreur inattendue: ' + err.message);
+    } catch (error) {
+        console.error('❌ Erreur initialisation:', error);
     }
-});
+}
+
+// Initialisation formulaire
+function initialiserFormulaire() {
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const prenom = document.getElementById('prenom').value.trim();
+        const nom = document.getElementById('nom').value.trim();
+        const poste = document.getElementById('poste').value.trim();
+        
+        if (!prenom || !nom || !poste) {
+            alert('Veuillez remplir tous les champs');
+            return;
+        }
+        
+        const nouvelAgent = { prenom, nom, poste };
+        console.log('➕ Tentative ajout:', nouvelAgent);
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('agents')
+                .insert([nouvelAgent])
+                .select();
+
+            if (error) {
+                console.error('❌ Erreur insertion détaillée:', error);
+                
+                if (error.code === '42501') {
+                    alert('Erreur de permissions RLS. Vérifiez les politiques dans Supabase.');
+                } else {
+                    alert('Erreur: ' + error.message);
+                }
+            } else {
+                console.log('✅ Agent ajouté:', data);
+                form.reset();
+                await chargerAgents();
+                alert('✅ Agent ajouté avec succès!');
+            }
+        } catch (err) {
+            console.error('❌ Exception:', err);
+            alert('Erreur inattendue: ' + err.message);
+        }
+    });
+}
 
 // Charger les agents
 async function chargerAgents() {
     console.log('📥 Chargement des agents...');
     
     try {
-        const { data: agents, error } = await supabase
+        const { data: agents, error } = await supabaseClient
             .from('agents')
             .select('*')
             .order('created_at', { ascending: false });
@@ -157,7 +203,7 @@ window.supprimerAgent = async (id) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer cet agent ?')) return;
 
     try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('agents')
             .delete()
             .eq('id', id);
@@ -167,9 +213,12 @@ window.supprimerAgent = async (id) => {
             alert('Erreur lors de la suppression: ' + error.message);
         } else {
             console.log('✅ Agent supprimé');
-            chargerAgents();
+            await chargerAgents();
         }
     } catch (err) {
         console.error('❌ Exception suppression:', err);
     }
 };
+
+// Démarrer l'application
+document.addEventListener('DOMContentLoaded', initialiserApplication);
