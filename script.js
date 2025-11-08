@@ -4,62 +4,9 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-// Fonction pour afficher les popups
-function afficherPopup(type, titre, message, details = '') {
-    // Créer le popup
-    const popup = document.createElement('div');
-    popup.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        padding: 20px;
-        border-radius: 10px;
-        color: white;
-        font-family: Arial, sans-serif;
-        z-index: 10000;
-        min-width: 300px;
-        max-width: 400px;
-        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        backdrop-filter: blur(10px);
-    `;
-
-    // Couleur selon le type
-    if (type === 'erreur') {
-        popup.style.background = 'linear-gradient(135deg, #ff4757, #ff3838)';
-    } else if (type === 'succes') {
-        popup.style.background = 'linear-gradient(135deg, #2ed573, #1e90ff)';
-    } else if (type === 'warning') {
-        popup.style.background = 'linear-gradient(135deg, #ffa502, #ff7f50)';
-    } else {
-        popup.style.background = 'linear-gradient(135deg, #747d8c, #57606f)';
-    }
-
-    popup.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
-            <h3 style="margin: 0; font-size: 18px;">${titre}</h3>
-            <button onclick="this.parentElement.parentElement.remove()" 
-                    style="background: none; border: none; color: white; font-size: 20px; cursor: pointer; padding: 0; margin: 0;">
-                ×
-            </button>
-        </div>
-        <p style="margin: 0 0 10px 0; font-size: 14px; line-height: 1.4;">${message}</p>
-        ${details ? `<pre style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px; font-size: 12px; margin: 0; overflow: auto; max-height: 100px;">${details}</pre>` : ''}
-    `;
-
-    // Ajouter au body
-    document.body.appendChild(popup);
-
-    // Supprimer automatiquement après 8 secondes
-    setTimeout(() => {
-        if (popup.parentElement) {
-            popup.remove();
-        }
-    }, 8000);
-}
-
 // Test de connexion immédiat
 async function testerConnexion() {
-    afficherPopup('warning', '🔍 Test en cours', 'Connexion à Supabase...');
+    console.log('🔍 Test de connexion Supabase...');
     
     try {
         const { data, error } = await supabase
@@ -68,17 +15,32 @@ async function testerConnexion() {
             .limit(1);
         
         if (error) {
-            afficherPopup('erreur', '❌ Erreur de connexion', 
-                'Impossible de se connecter à la base de données', 
-                JSON.stringify(error, null, 2));
+            console.error('❌ ERREUR RLS/Connexion:', error);
+            
+            // Afficher l'erreur à l'écran
+            const errorDiv = document.createElement('div');
+            errorDiv.style.cssText = `
+                background: #ff4444; 
+                color: white; 
+                padding: 15px; 
+                margin: 10px 0; 
+                border-radius: 5px;
+                font-family: Arial, sans-serif;
+            `;
+            errorDiv.innerHTML = `
+                <h3>❌ Erreur Supabase</h3>
+                <p><strong>Message:</strong> ${error.message}</p>
+                <p><strong>Code:</strong> ${error.code || 'N/A'}</p>
+                <p><strong>Détails:</strong> ${error.details || 'N/A'}</p>
+                <p><strong>Solution:</strong> Vérifiez les politiques RLS dans Supabase</p>
+            `;
+            document.body.prepend(errorDiv);
+            
         } else {
-            afficherPopup('succes', '✅ Connexion réussie', 
-                'Connexion à Supabase établie avec succès !');
+            console.log('✅ Connexion réussie! RLS configuré correctement');
         }
     } catch (err) {
-        afficherPopup('erreur', '❌ Exception', 
-            'Erreur inattendue lors de la connexion', 
-            err.toString());
+        console.error('❌ Exception:', err);
     }
 }
 
@@ -88,7 +50,6 @@ const listeContainer = document.getElementById('liste-agents-container');
 
 // Initialisation
 document.addEventListener('DOMContentLoaded', () => {
-    afficherPopup('warning', '⚡ Initialisation', 'Lancement de l\'application...');
     testerConnexion();
     chargerAgents();
 });
@@ -102,12 +63,12 @@ form.addEventListener('submit', async (e) => {
     const poste = document.getElementById('poste').value.trim();
     
     if (!prenom || !nom || !poste) {
-        afficherPopup('warning', '⚠️ Champ manquant', 'Veuillez remplir tous les champs');
+        alert('Veuillez remplir tous les champs');
         return;
     }
     
     const nouvelAgent = { prenom, nom, poste };
-    afficherPopup('warning', '➕ Ajout en cours', `Tentative d'ajout de: ${prenom} ${nom}`);
+    console.log('➕ Tentative ajout:', nouvelAgent);
 
     try {
         const { data, error } = await supabase
@@ -116,25 +77,28 @@ form.addEventListener('submit', async (e) => {
             .select();
 
         if (error) {
-            afficherPopup('erreur', '❌ Erreur d\'insertion', 
-                'Impossible d\'ajouter l\'agent à la base de données', 
-                JSON.stringify(error, null, 2));
+            console.error('❌ Erreur insertion détaillée:', error);
+            
+            if (error.code === '42501') {
+                alert('Erreur de permissions RLS. Vérifiez les politiques dans Supabase.');
+            } else {
+                alert('Erreur: ' + error.message);
+            }
         } else {
-            afficherPopup('succes', '✅ Succès !', 
-                `Agent "${prenom} ${nom}" ajouté avec succès`);
+            console.log('✅ Agent ajouté:', data);
             form.reset();
             chargerAgents();
+            alert('✅ Agent ajouté avec succès!');
         }
     } catch (err) {
-        afficherPopup('erreur', '❌ Exception', 
-            'Erreur inattendue lors de l\'ajout', 
-            err.toString());
+        console.error('❌ Exception:', err);
+        alert('Erreur inattendue: ' + err.message);
     }
 });
 
 // Charger les agents
 async function chargerAgents() {
-    afficherPopup('warning', '📥 Chargement', 'Récupération de la liste des agents...');
+    console.log('📥 Chargement des agents...');
     
     try {
         const { data: agents, error } = await supabase
@@ -143,27 +107,22 @@ async function chargerAgents() {
             .order('created_at', { ascending: false });
 
         if (error) {
-            afficherPopup('erreur', '❌ Erreur de chargement', 
-                'Impossible de charger les agents', 
-                JSON.stringify(error, null, 2));
-                
+            console.error('❌ Erreur chargement:', error);
             listeContainer.innerHTML = `
                 <div style="color: red; text-align: center; padding: 20px;">
                     <h3>❌ Erreur de chargement</h3>
                     <p>${error.message}</p>
+                    <p><em>Code: ${error.code || 'N/A'}</em></p>
                 </div>
             `;
             return;
         }
 
-        afficherPopup('succes', '📋 Chargement réussi', 
-            `${agents.length} agent(s) chargé(s)`);
+        console.log(`📋 ${agents.length} agent(s) chargé(s)`);
         afficherAgents(agents);
         
     } catch (err) {
-        afficherPopup('erreur', '❌ Exception', 
-            'Erreur lors du chargement', 
-            err.toString());
+        console.error('❌ Exception chargement:', err);
     }
 }
 
@@ -172,12 +131,7 @@ function afficherAgents(agents) {
     listeContainer.innerHTML = '';
     
     if (agents.length === 0) {
-        listeContainer.innerHTML = `
-            <div style="text-align: center; padding: 40px; color: #666;">
-                <h3>📝 Aucun agent</h3>
-                <p>Ajoutez votre premier agent ci-dessus</p>
-            </div>
-        `;
+        listeContainer.innerHTML = '<p class="text-center">Aucun agent enregistré</p>';
         return;
     }
 
@@ -188,10 +142,10 @@ function afficherAgents(agents) {
             <div class="agent-info">
                 <h3>${agent.prenom} ${agent.nom}</h3>
                 <p>${agent.poste}</p>
-                <small>ID: ${agent.id}</small>
+                <small>ID: ${agent.id} | Créé le: ${new Date(agent.created_at).toLocaleDateString()}</small>
             </div>
-            <button class="btn-supprimer" onclick="supprimerAgent(${agent.id}, '${agent.prenom} ${agent.nom}')">
-                🗑️ Supprimer
+            <button class="btn-supprimer" onclick="supprimerAgent(${agent.id})">
+                ️ Supprimer
             </button>
         `;
         listeContainer.appendChild(agentCard);
@@ -199,10 +153,8 @@ function afficherAgents(agents) {
 }
 
 // Supprimer un agent
-window.supprimerAgent = async (id, nomComplet) => {
-    if (!confirm(`Êtes-vous sûr de vouloir supprimer "${nomComplet}" ?`)) return;
-
-    afficherPopup('warning', '🗑️ Suppression', `Suppression de "${nomComplet}"...`);
+window.supprimerAgent = async (id) => {
+    if (!confirm('Êtes-vous sûr de vouloir supprimer cet agent ?')) return;
 
     try {
         const { error } = await supabase
@@ -211,23 +163,13 @@ window.supprimerAgent = async (id, nomComplet) => {
             .eq('id', id);
 
         if (error) {
-            afficherPopup('erreur', '❌ Erreur de suppression', 
-                'Impossible de supprimer l\'agent', 
-                JSON.stringify(error, null, 2));
+            console.error('❌ Erreur suppression:', error);
+            alert('Erreur lors de la suppression: ' + error.message);
         } else {
-            afficherPopup('succes', '✅ Supprimé !', 
-                `"${nomComplet}" a été supprimé avec succès`);
+            console.log('✅ Agent supprimé');
             chargerAgents();
         }
     } catch (err) {
-        afficherPopup('erreur', '❌ Exception', 
-            'Erreur lors de la suppression', 
-            err.toString());
+        console.error('❌ Exception suppression:', err);
     }
-};
-
-// Fonction pour forcer le test de connexion (utile pour debug)
-window.testConnexionManuelle = () => {
-    afficherPopup('warning', '🔄 Test manuel', 'Lancement du test de connexion...');
-    testerConnexion();
 };
